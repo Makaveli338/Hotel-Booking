@@ -100,18 +100,20 @@
       </div>
     </div>
 
+
+    <!-- Booking form -->
     <div>
-      <div class=" absolute -bottom-20 left-[20%] w-7xl h-40 grid grid-cols-4 mx-auto px-6 py-9 gap-10 bg-white shadow-md">
+      <div class=" absolute -bottom-20 left-1/2 transform -translate-x-1/2  w-[80%] h-40 grid grid-cols-4 mx-auto px-6 py-9 gap-10 bg-white shadow-md">
         
           <!-- Check-In Date Input -->
           <div>
-            <label class="block text-sm font-medium text-gray-700"
+            <label class="block text-sm font-medium text-gray-700 "
               >Check-In</label
             >
             <input
               type="date"
               v-model="checkInDate"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              class="hover:cursor-pointer mt-1 w-full p-2 border border-gray-300 rounded-md"
             />
           </div>
 
@@ -123,7 +125,7 @@
             <input
               type="date"
               v-model="checkOutDate"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              class="hover:cursor-pointer mt-1 w-full p-2 border border-gray-300 rounded-md"
             />
           </div>
 
@@ -134,7 +136,7 @@
             >
             <select
               v-model="guests"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
+              class=" hover:cursor-pointer mt-1 w-full p-2 border border-gray-300 rounded-md"
             >
               <option v-for="n in 10" :value="n" :key="n">
                 {{ n }}
@@ -142,11 +144,11 @@
             </select>
           </div>
 
-          <!-- Check Availability Button -->
-          <button
+          <!-- Book Button -->
+          <button @click="Book"
             class="mt-4 w-full py-2 px-4 bg-[#d1964e] text-white font-medium rounded-md hover:bg-[#866a47] focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            CHECK AVAILABILITY
+            BOOK
           </button>
         </div>
       </div>
@@ -500,46 +502,35 @@
 
         <!--details Container-->
       <div>
-      <div class=" mt-20 w-7xl h-40 grid grid-cols-4 mx-auto px-6 py-9 gap-10 bg-[#d6c3ac] shadow-md">
+      <div v-for="reservation in reservationsStore.reservations"
+      :key="reservation.id"
+       class=" mt-20 w-[70%] h-40 grid grid-cols-4 mx-auto px-6 py-9 gap-10 bg-[#d6c3ac] shadow-md">
+
         
           <!-- Check-In Date Input -->
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Check-In</label
-            >
-            <input
-              type="date" disabled
-              v-model="checkInDate"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
-            />
+            <div class="block "              >
+              <h1 class="text-sm font-medium text-gray-700">Check-In</h1>
+            <p  class="mt-1 w-full p-2 border border-gray-300 rounded-md" > {{ reservation.checkInDate }}</p>
+          </div>
           </div>
 
           <!-- Check-Out Date Input -->
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Check-Out</label
-            >
-            <input disabled
-              type="date"
-              v-model="checkOutDate"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
-            />
+            <div class="block "              >
+              <h1 class="text-sm font-medium text-gray-700">Check-In</h1>
+            <p  class="mt-1 w-full p-2 border border-gray-300 rounded-md" > {{ reservation.checkOutDate }}</p>
+          </div>
           </div>
 
           <!-- Guests Select Dropdown -->
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Guests</label
-            >
-            <select disabled
-              v-model="guests"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
-            >
-              <option v-for="n in 10" :value="n" :key="n">
-                {{ n }}
-              </option>
-            </select>
+            <div class="block "              >
+              <h1 class="text-sm font-medium text-gray-700">Check-In</h1>
+            <p  class="mt-1 w-full p-2 border border-gray-300 rounded-md" > {{ reservation.guests }}</p>
           </div>
+          </div>
+
 
           <!-- Check Availability Button -->
           <button
@@ -549,75 +540,73 @@
           </button>
         </div>
       </div>
-
-
-           <!--details Container-->
-           <div>
-      <div class=" mt-20 w-7xl h-40 grid grid-cols-4 mx-auto px-6 py-9 gap-10 bg-[#d6c3ac] shadow-md">
-        
-          <!-- Check-In Date Input -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Check-In</label
-            >
-            <input disabled
-              type="date"
-              v-model="checkInDate"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <!-- Check-Out Date Input -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Check-Out</label
-            >
-            <input disabled
-              type="date"
-              v-model="checkOutDate"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
-            />
-          </div>
-
-          <!-- Guests Select Dropdown -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >Guests</label
-            >
-            <select disabled
-              v-model="guests"
-              class="mt-1 w-full p-2 border border-gray-300 rounded-md"
-            >
-              <option v-for="n in 10" :value="n" :key="n">
-                {{ n }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Check Availability Button -->
-          <button
-            class="mt-4 w-full py-2 px-4 bg-[#db3731] text-white font-medium rounded-md "
-          >
-            Declined
-          </button>
-        </div>
-      </div>
-
-
-
-      
-  
+ 
   <Footer />
-</template>
 
-<script>
-export default {
-  data() {
-    return {
-      guests: 2,
-      checkInDate: "2025-12-31",
-      checkOutDate: "2025-12-31",
-    };
-  },
+  
+</template>
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import { getAuth, type User } from 'firebase/auth';
+import { useReservationsStore } from '../stores/Reservations';
+import { useUserStore } from '../stores/User';
+const { $db } = useNuxtApp();
+
+const reservationsStore = useReservationsStore();
+const userStore = useUserStore();
+const checkInDate = ref('');
+const checkOutDate = ref('');
+const guests = ref(1);
+
+onMounted(async () => {
+  const auth = getAuth();
+
+  // Check if the user is already logged in
+  if (userStore.userId) {
+    console.log('User UID found in store:', userStore.userId);
+    await reservationsStore.fetchReservations(userStore.userId);
+    return;
+  }
+
+  // If no UID in the store, check Firebase auth
+  const currentUser = auth.currentUser;
+  console.log('Current user UID:', currentUser?.uid);
+
+  if (currentUser) {
+    userStore.userId = currentUser.uid; // Set the userId in the store
+    console.log('Fetching reservations for user:', currentUser.uid);
+    await reservationsStore.fetchReservations(currentUser.uid);
+    console.log('Reservations:', reservationsStore.reservations);
+  } else {
+    console.warn('No user is currently logged in.');
+  }
+});
+
+const Book = async () => {
+  if (!checkInDate.value || !checkOutDate.value || !guests.value) {
+    console.error('Please fill in all the fields before booking.');
+    return;
+  }
+
+  if (!userStore.userId) {
+    console.error('User is not logged in. Cannot book a reservation.');
+    return;
+  }
+
+  await reservationsStore.addReservation(
+    {
+      checkInDate: checkInDate.value,
+      checkOutDate: checkOutDate.value,
+      guests: guests.value,
+      userId: userStore.userId, // Include userId in the reservation object
+    },
+    $db, // Pass the Firestore instance as the second argument
+    userStore.userId // Pass the userId as the third argument
+  );
+
+  checkInDate.value = '';
+  checkOutDate.value = '';
+  guests.value = 1;
+  console.log('Reservation added successfully');
 };
 </script>
