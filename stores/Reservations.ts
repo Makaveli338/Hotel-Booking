@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, updateDoc, doc } from 'firebase/firestore';
 
 // Define the Reservation interface
 interface Reservation {
@@ -7,7 +7,8 @@ interface Reservation {
   checkInDate: string;
   checkOutDate: string;
   guests: number;
-  userId: string;  
+  userId: string;
+  status: 'pending' | 'confirmed' | 'declined'; // Add status field
 }
 
 export const useReservationsStore = defineStore('reservations', {
@@ -15,6 +16,7 @@ export const useReservationsStore = defineStore('reservations', {
     reservations: [] as Reservation[], // Explicitly type the reservations array
   }),
   actions: {
+    // Fetch reservations for a specific user
     async fetchReservations(userId: string) {
       const { $db } = useNuxtApp();
       try {
@@ -32,6 +34,24 @@ export const useReservationsStore = defineStore('reservations', {
       }
     },
 
+    // Fetch all reservations (for admin)
+    async fetchAllReservations() {
+      const { $db } = useNuxtApp();
+      try {
+        const reservationsRef = collection($db, 'reservations');
+        console.log('Fetching all reservations');
+        const snapshot = await getDocs(reservationsRef);
+
+        this.reservations = snapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        })) as Reservation[]; // Cast the result to Reservation[]
+      } catch (error) {
+        console.error('Error fetching all reservations:', error);
+      }
+    },
+
+    // Add a new reservation
     async addReservation(reservation: Reservation, db: any, userId: string) {
       console.log('addReservation() in store called with:', reservation);
 
@@ -41,16 +61,36 @@ export const useReservationsStore = defineStore('reservations', {
           checkOutDate: reservation.checkOutDate,
           guests: reservation.guests,
           userId,
+          status: 'pending', // Default status is 'pending'
         });
 
         this.reservations.push({
           id: docRef.id,
           ...reservation,
           userId,
+          status: 'pending', // Add default status to local state
         });
         console.log('Reservation successfully added with ID:', docRef.id);
       } catch (error) {
         console.error('Error adding reservation:', error);
+      }
+    },
+
+    // Update the status of a reservation (approve or decline)
+    async updateReservationStatus(reservationId: string, status: 'confirmed' | 'declined') {
+      const { $db } = useNuxtApp();
+      try {
+        const reservationRef = doc($db, 'reservations', reservationId);
+        await updateDoc(reservationRef, { status });
+
+        // Update the local state
+        const reservation = this.reservations.find((r) => r.id === reservationId);
+        if (reservation) {
+          reservation.status = status;
+        }
+        console.log(`Reservation ${reservationId} updated to status: ${status}`);
+      } catch (error) {
+        console.error('Error updating reservation status:', error);
       }
     },
   },
