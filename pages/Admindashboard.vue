@@ -154,14 +154,14 @@
       <!-- Check Availability Button -->
       <div class="flex">
         <button
-          @click="approveReservation(reservation.id)"
+          @click="approveReservation(reservation.id ?? '')"
           class="mt-4 w-1/2 py-2 px-4 bg-[#45db31] text-white font-medium rounded-md"
         >
           Approve
         </button>
 
         <button
-          @click="declineReservation(reservation.id)"
+          @click="declineReservation(reservation.id ?? '')"
           class="mt-4 w-1/2 py-2 px-4 bg-[#d61b1b] text-white font-medium rounded-md"
         >
           Decline

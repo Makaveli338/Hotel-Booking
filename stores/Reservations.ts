@@ -8,7 +8,8 @@ interface Reservation {
   checkOutDate: string;
   guests: number;
   userId: string;
-  status: 'pending' | 'confirmed' | 'declined'; // Add status field
+  userName?: string; // Optional userName field
+  status: 'pending' | 'confirmed' | 'declined'; // Status field
 }
 
 export const useReservationsStore = defineStore('reservations', {
@@ -52,7 +53,7 @@ export const useReservationsStore = defineStore('reservations', {
     },
 
     // Add a new reservation
-    async addReservation(reservation: Reservation, db: any, userId: string) {
+    async addReservation(reservation: Reservation, db: any, userId: string, userName: string) {
       console.log('addReservation() in store called with:', reservation);
 
       try {
@@ -61,6 +62,7 @@ export const useReservationsStore = defineStore('reservations', {
           checkOutDate: reservation.checkOutDate,
           guests: reservation.guests,
           userId,
+          userName, // Include userName
           status: 'pending', // Default status is 'pending'
         });
 
@@ -68,6 +70,7 @@ export const useReservationsStore = defineStore('reservations', {
           id: docRef.id,
           ...reservation,
           userId,
+          userName, // Include userName in local state
           status: 'pending', // Add default status to local state
         });
         console.log('Reservation successfully added with ID:', docRef.id);

@@ -588,7 +588,7 @@ const Book = async () => {
     return;
   }
 
-  if (!userStore.userId) {
+  if (!userStore.userId || !userStore.username) {
     console.error('User is not logged in. Cannot book a reservation.');
     return;
   }
@@ -598,10 +598,13 @@ const Book = async () => {
       checkInDate: checkInDate.value,
       checkOutDate: checkOutDate.value,
       guests: guests.value,
-      userId: userStore.userId, // Include userId in the reservation object
+      userId: userStore.userId, 
+      status: 'pending',
+      // Use username from store or default to 'Guest'
     },
     $db, // Pass the Firestore instance as the second argument
-    userStore.userId // Pass the userId as the third argument
+    userStore.userId, // Pass the userId as the third argument
+    userStore.username
   );
 
   checkInDate.value = '';
