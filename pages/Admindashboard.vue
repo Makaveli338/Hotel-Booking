@@ -108,18 +108,19 @@
   </div>
 
   <!--details Container-->
-  <div>
-    <div
-      v-for="reservation in reservationsStore.reservations"
-      :key="reservation.id"
-      class="mt-20 w-[70%] h-40 grid grid-cols-4 mx-auto px-6 py-9 gap-10 bg-[#d6c3ac] shadow-md"
-    >
-      <div>
-        <p>
-          Reservation by {{ reservation.userId }} ,
-          <span v-if="reservation.userName">, {{ reservation.userName }}</span>
-        </p>
+  <div v-for="reservation in reservationsStore.reservations"
+  :key="reservation.id">
+
+  <div class="w-[70%] text-left text-[#AE7D54] mx-auto mt-10 font-semibold">
+        <h1>
+          Reservation by :
+          <span v-if="reservation.username"> {{ reservation.username }}</span>
+        </h1>
       </div>
+    <div 
+      class="mt-5 w-[70%] h-40 grid grid-cols-4 mx-auto px-6 py-9 gap-10 bg-[#d6c3ac] shadow-md"
+    > 
+      
 
       <!-- Check-In Date Input -->
       <div>
@@ -152,21 +153,33 @@
       </div>
 
       <!-- Check Availability Button -->
-      <div class="flex">
+      <!-- Action Buttons -->
+    <div class="flex">
+      <template v-if="reservation.status === 'pending'">
         <button
           @click="approveReservation(reservation.id ?? '')"
-          class="mt-4 w-1/2 py-2 px-4 bg-[#45db31] text-white font-medium rounded-md"
+          class="mt-4 w-1/2 py-2 px-4 bg-[#45db31] text-white font-medium rounded-md flex justify-center items-center hover:cursor-pointer"
         >
           Approve
         </button>
-
         <button
           @click="declineReservation(reservation.id ?? '')"
-          class="mt-4 w-1/2 py-2 px-4 bg-[#d61b1b] text-white font-medium rounded-md"
+          class="mt-4 w-1/2 py-2 px-4 bg-[#d61b1b] text-white font-medium rounded-md flex justify-center items-center hover:cursor-pointer"
         >
           Decline
         </button>
-      </div>
+      </template>
+      <template v-else-if="reservation.status === 'confirmed'">
+        <span class="mt-4 w-full py-2 px-4 bg-[#45db31] text-white font-medium rounded-md flex justify-center items-center hover:cursor-pointer">
+          Approved
+        </span>
+      </template>
+      <template v-else-if="reservation.status === 'declined'">
+        <span class="mt-4 w-full py-2 px-4 bg-[#d61b1b] text-white font-medium rounded-md flex justify-center items-center hover:cursor-pointer">
+          Declined
+        </span>
+      </template>
+    </div>
     </div>
   </div>
 
@@ -177,6 +190,7 @@
 import { onMounted } from 'vue';
 import { useReservationsStore } from '../stores/Reservations';
 import { useUserStore } from '../stores/User';
+import { doc, getDoc } from 'firebase/firestore';
 const { $db } = useNuxtApp();
 
 const reservationsStore = useReservationsStore();
@@ -184,12 +198,39 @@ const userStore = useUserStore();
 
 // Fetch all reservations when the admin dashboard is mounted
 onMounted(async () => {
-  if (userStore.isAdmin) {
-    console.log('Admin logged in. Fetching all reservations...');
-    await reservationsStore.fetchAllReservations();
+  if (userStore.userId) {
+    const userDocRef = doc($db, 'users', userStore.userId ?? '');
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      userStore.setAdminRole(userData.role === 'admin'); // Set admin role based on Firestore data
+      console.log('Admin role fetched from Firestore:', userData.role);
+    } else {
+      console.warn('User document does not exist in Firestore.');
+    }
+
+    if (userStore.isAdmin) {
+      console.log('Admin logged in. Fetching all reservations...');
+      await reservationsStore.fetchAllReservations();
+    } else {
+      console.error(
+        'Access denied: User does not have admin privileges.\n' +
+        `User ID: ${userStore.userId || 'Not provided'}\n` +
+        `Username: ${userStore.username || 'Not provided'}\n` +
+        `Admin Status: ${userStore.isAdmin}\n` +
+        'Possible reasons:\n' +
+        '- The user is not logged in.\n' +
+        '- The user does not have the "admin" role.\n' +
+        '- There was an error fetching the user role from Firestore.\n' +
+        'Suggested actions:\n' +
+        '- Ensure the user is logged in.\n' +
+        '- Verify the user role in Firestore.\n' +
+        '- Check if the "isAdmin" property is being set correctly in the User store.'
+      );
+    }
   } else {
-    console.error('Access denied. Admins only.');
-    // Redirect to a different page or show an error message
+    console.error('User ID is null. Cannot fetch user document.');
   }
 });
 

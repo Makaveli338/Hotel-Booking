@@ -8,7 +8,7 @@ interface Reservation {
   checkOutDate: string;
   guests: number;
   userId: string;
-  userName?: string; // Optional userName field
+  username?: string; // Optional username field
   status: 'pending' | 'confirmed' | 'declined'; // Status field
 }
 
@@ -52,25 +52,30 @@ export const useReservationsStore = defineStore('reservations', {
       }
     },
 
+    
+
     // Add a new reservation
-    async addReservation(reservation: Reservation, db: any, userId: string, userName: string) {
+    async addReservation(reservation: Reservation, db: any, userId: string, username: string) {
       console.log('addReservation() in store called with:', reservation);
 
       try {
+        console.log('Attempting to add reservation to Firestore...');
         const docRef = await addDoc(collection(db, 'reservations'), {
           checkInDate: reservation.checkInDate,
           checkOutDate: reservation.checkOutDate,
           guests: reservation.guests,
           userId,
-          userName, // Include userName
+          username, // Include username
           status: 'pending', // Default status is 'pending'
         });
+
+        console.log('Reservation successfully added to Firestore with ID:', docRef.id);
 
         this.reservations.push({
           id: docRef.id,
           ...reservation,
           userId,
-          userName, // Include userName in local state
+          username, // Include username in local state
           status: 'pending', // Add default status to local state
         });
         console.log('Reservation successfully added with ID:', docRef.id);
@@ -97,4 +102,4 @@ export const useReservationsStore = defineStore('reservations', {
       }
     },
   },
-});
+}); 

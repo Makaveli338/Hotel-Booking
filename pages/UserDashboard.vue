@@ -532,12 +532,18 @@
           </div>
 
 
-          <!-- Check Availability Button -->
-          <button
-            class="mt-4 w-full py-2 px-4 bg-[#45db31] text-white font-medium rounded-md"
-          >
-            Approved
-          </button>
+          <!-- Status display Button -->
+          <div class="flex ">
+           <template v-if="reservation.status === 'pending'">
+             <span class="mt-4 w-full py-2 px-4 bg-[#d1964e] text-white font-medium rounded-md flex justify-center items-center">Pending</span>
+           </template>
+           <template v-else-if="reservation.status === 'confirmed'">
+             <span class="mt-4 w-full py-2 px-4 bg-[#45db31] text-white font-medium rounded-md flex justify-center items-center">Approved</span>
+           </template>
+           <template v-else-if="reservation.status === 'declined'">
+             <span class="mt-4 w-full py-2 px-4 bg-[#d61b1b] text-white font-medium rounded-md flex justify-center items-center">Declined</span>
+           </template>
+         </div>
         </div>
       </div>
  
@@ -552,6 +558,7 @@ import { useReservationsStore } from '../stores/Reservations';
 import { useUserStore } from '../stores/User';
 const { $db } = useNuxtApp();
 
+
 const reservationsStore = useReservationsStore();
 const userStore = useUserStore();
 const checkInDate = ref('');
@@ -564,6 +571,7 @@ onMounted(async () => {
   // Check if the user is already logged in
   if (userStore.userId) {
     console.log('User UID found in store:', userStore.userId);
+    console.log('User name found in store:', userStore.username);
     await reservationsStore.fetchReservations(userStore.userId);
     return;
   }
@@ -582,18 +590,41 @@ onMounted(async () => {
   }
 });
 
+
+
 const Book = async () => {
+  console.log('Book function called');
+
+
   if (!checkInDate.value || !checkOutDate.value || !guests.value) {
-    console.error('Please fill in all the fields before booking.');
+    console.error(
+      'Validation failed: Missing required fields. Please ensure the following fields are filled:\n' +
+      `Check-In Date: ${checkInDate.value || 'Not provided'}\n` +
+      `Check-Out Date: ${checkOutDate.value || 'Not provided'}\n` +
+      `Guests: ${guests.value || 'Not provided'}`
+    );
     return;
   }
 
   if (!userStore.userId || !userStore.username) {
-    console.error('User is not logged in. Cannot book a reservation.');
+    console.error(
+      'Authentication failed: User is not logged in or username is missing.\n' +
+      `User ID: ${userStore.userId || 'Not provided'}\n` +
+      `username: ${userStore.username || 'Not provided'}\n` +
+      'Possible reasons:\n' +
+      '- The user has not logged in.\n' +
+      '- Firebase authentication failed.\n' +
+      '- The user details were not correctly set in the store.\n' +
+      'Suggested actions:\n' +
+      '- Ensure the user is logged in.\n' +
+      '- Verify Firebase authentication.\n' +
+      '- Check if the user details are being fetched and stored correctly.'
+    );
     return;
   }
 
   await reservationsStore.addReservation(
+
     {
       checkInDate: checkInDate.value,
       checkOutDate: checkOutDate.value,

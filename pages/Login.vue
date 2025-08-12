@@ -38,12 +38,12 @@
     required
   />
 
-  <!-- Username only for Register -->
+  <!-- username only for Register -->
   <label
     v-if="!isLogin"
     class="mt-2"
     for="username"
-    >Username:</label
+    >username:</label
   >
   <input
     v-if="!isLogin"
@@ -96,6 +96,7 @@ import { ref } from 'vue';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'vue-router';
+import { useUserStore } from '../stores/User';
 
 // Declaring variables
 const auth = getAuth();
@@ -107,9 +108,20 @@ const error = ref('');
 const db = getFirestore();
 const isLogin = ref(false);
 
+// Accessing the user store
+const userStore = useUserStore();
+
 // Helper function to handle role-based redirection
 async function handleRoleBasedRedirect(uid: string) {
+  console.log('handleRoleBasedRedirect called for UID:', uid); // Debug log
   const role = await fetchUserRole(uid);
+  console.log('User role fetched:', role); // Debug log
+
+   // Set isAdmin in userStore
+  userStore.setAdminRole(role === 'admin'); // Update isAdmin based on role
+  console.log('Admin status set in userStore:', userStore.isAdmin);
+
+
   if (role === 'admin') {
     router.replace('/admindashboard');
   } else {
@@ -119,6 +131,7 @@ async function handleRoleBasedRedirect(uid: string) {
 
 // Register function
 async function register() {
+  console.log('Register function called'); // Debug log
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user;
@@ -130,22 +143,48 @@ async function register() {
       role: 'user', // default role
     });
 
+    console.log('Username saved during registration:', username.value); // Debug log
+
+    // Update user store
+    userStore.setUserId(user.uid);
+    userStore.setusername(username.value);
+
     // Redirect based on role
     await handleRoleBasedRedirect(user.uid);
   } catch (err: any) {
+    console.error('Error during registration:', err.message);
     error.value = err.message;
   }
 }
 
 // Login function
 async function login() {
+  console.log('Login function called'); // Debug log
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email.value, password.value);
     const user = userCredential.user;
 
+    console.log('Login successful, user:', user); // Debug log
+
+    // Fetch username from Firestore
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (userDocSnap.exists()) {
+      const userData = userDocSnap.data();
+      console.log('Username fetched during login:', userData.username); // Debug log
+
+      // Update user store
+      userStore.setUserId(user.uid);
+      userStore.setusername(userData.username);
+    } else {
+      console.warn('User document does not exist.');
+    }
+
     // Redirect based on role
     await handleRoleBasedRedirect(user.uid);
   } catch (err: any) {
+    console.error('Error during login:', err.message);
     error.value = err.message;
   }
 }
@@ -158,9 +197,10 @@ async function fetchUserRole(uid: string): Promise<string | null> {
 
     if (userDocSnap.exists()) {
       const userData = userDocSnap.data();
+      console.log('Role fetched from Firestore:', userData.role); // Debug log
       return userData.role || null;
     } else {
-      console.warn('User document does not exist.');
+      console.warn('User document does not exist in Firestore.');
       return null;
     }
   } catch (error) {
